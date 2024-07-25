@@ -1,0 +1,291 @@
+
+Goma
+Goma Luitel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khem Raj Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #quiz-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 50%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .answer {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .answer.correct {
+            background-color: #4caf50;
+        }
+        .answer.wrong {
+            background-color: #f44336;
+        }
+        #timer {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        #username-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <div id="username-container">
+            <label for="username">Enter your name: </label>
+            <input type="text" id="username" required>
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+        <div id="quiz" style="display: none;">
+            <div id="timer">Time left: <span id="time-left">30</span>s</div>
+            <div id="question-container">
+                <div class="question" id="question">Question text</div>
+                <div class="answers" id="answers">
+                    <!-- Answers will be dynamically added here -->
+                </div>
+            </div>
+            <button id="next-button" onclick="nextQuestion()" style="display: none;">Next</button>
+            <div id="score-container" style="display: none;">
+                <h3>Final Score: <span id="final-score"></span></h3>
+            </div>
+        </div>
+    </div> 
+
+    <script>
+        const questions = [
+            // 50 football questions
+            { question: "Who won the FIFA World Cup in 2018?", answers: ["France", "Croatia", "Brazil", "Germany"], correct: "France" },
+            { question: "Which country has won the most FIFA World Cups?", answers: ["Brazil", "Germany", "Italy", "Argentina"], correct: "Brazil" },
+            { question: "Who is known as the 'Hand of God' in football?", answers: ["Diego Maradona", "Lionel Messi", "Cristiano Ronaldo", "Pelé"], correct: "Diego Maradona" },
+            { question: "Which player has won the most Ballon d'Or awards?", answers: ["Lionel Messi", "Cristiano Ronaldo", "Zinedine Zidane", "Johan Cruyff"], correct: "Lionel Messi" },
+            { question: "Which club has won the most UEFA Champions League titles?", answers: ["Real Madrid", "Barcelona", "Liverpool", "Bayern Munich"], correct: "Real Madrid" },
+            { question: "Who is the all-time top scorer in the UEFA Champions League?", answers: ["Cristiano Ronaldo", "Lionel Messi", "Raúl", "Robert Lewandowski"], correct: "Cristiano Ronaldo" },
+            { question: "Which country won the first ever FIFA World Cup in 1930?", answers: ["Uruguay", "Argentina", "Brazil", "Italy"], correct: "Uruguay" },
+            { question: "Who holds the record for the most goals in a single FIFA World Cup?", answers: ["Just Fontaine", "Gerd Müller", "Miroslav Klose", "Pelé"], correct: "Just Fontaine" },
+            { question: "Which player has the most international goals in football?", answers: ["Cristiano Ronaldo", "Ali Daei", "Pelé", "Lionel Messi"], correct: "Cristiano Ronaldo" },
+            { question: "Which team won the UEFA Euro 2020?", answers: ["Italy", "England", "Spain", "Portugal"], correct: "Italy" },
+            { question: "Who is the youngest player to score in a World Cup?", answers: ["Pelé", "Lionel Messi", "Kylian Mbappé", "Michael Owen"], correct: "Pelé" },
+            { question: "Which country won the Copa America 2021?", answers: ["Argentina", "Brazil", "Chile", "Uruguay"], correct: "Argentina" },
+            { question: "Who won the Golden Boot in the 2014 FIFA World Cup?", answers: ["James Rodríguez", "Thomas Müller", "Neymar", "Lionel Messi"], correct: "James Rodríguez" },
+            { question: "Which club has won the most English Premier League titles?", answers: ["Manchester United", "Liverpool", "Arsenal", "Chelsea"], correct: "Manchester United" },
+            { question: "Who was the top scorer in the 2018 FIFA World Cup?", answers: ["Harry Kane", "Kylian Mbappé", "Antoine Griezmann", "Romelu Lukaku"], correct: "Harry Kane" },
+            { question: "Which country hosted the 2006 FIFA World Cup?", answers: ["Germany", "Brazil", "South Africa", "France"], correct: "Germany" },
+            { question: "Who is the only player to win the FIFA World Cup three times?", answers: ["Pelé", "Maradona", "Zidane", "Ronaldo"], correct: "Pelé" },
+            { question: "Which player scored the 'Hand of God' goal?", answers: ["Diego Maradona", "Lionel Messi", "Cristiano Ronaldo", "David Beckham"], correct: "Diego Maradona" },
+            { question: "Who won the Golden Ball award in the 2018 FIFA World Cup?", answers: ["Luka Modric", "Kylian Mbappé", "Eden Hazard", "Lionel Messi"], correct: "Luka Modric" },
+            { question: "Which team has won the most Copa Libertadores titles?", answers: ["Independiente", "Boca Juniors", "River Plate", "São Paulo"], correct: "Independiente" },
+            { question: "Which club did David Beckham join after leaving Manchester United?", answers: ["Real Madrid", "LA Galaxy", "Paris Saint-Germain", "AC Milan"], correct: "Real Madrid" },
+            { question: "Which country won the UEFA Euro 2016?", answers: ["Portugal", "France", "Germany", "Spain"], correct: "Portugal" },
+            { question: "Who is the all-time top scorer for the England national team?", answers: ["Wayne Rooney", "Harry Kane", "Bobby Charlton", "Gary Lineker"], correct: "Wayne Rooney" },
+            { question: "Which player won the FIFA World Player of the Year award three times in the 1990s?", answers: ["Ronaldo", "Zinedine Zidane", "Luis Figo", "George Weah"], correct: "Ronaldo" },
+            { question: "Which club won the first Premier League title?", answers: ["Manchester United", "Arsenal", "Blackburn Rovers", "Chelsea"], correct: "Manchester United" },
+            { question: "Which country won the UEFA Euro 2004?", answers: ["Greece", "Portugal", "Spain", "Italy"], correct: "Greece" },
+            { question: "Which player scored the fastest hat-trick in Premier League history?", answers: ["Sadio Mané", "Cristiano Ronaldo", "Thierry Henry", "Sergio Agüero"], correct: "Sadio Mané" },
+            { question: "Who won the 1998 FIFA World Cup?", answers: ["France", "Brazil", "Germany", "Italy"], correct: "France" },
+            { question: "Which player has the most assists in Premier League history?", answers: ["Ryan Giggs", "Cesc Fàbregas", "Frank Lampard", "Steven Gerrard"], correct: "Ryan Giggs" },
+            { question: "Which country won the 2010 FIFA World Cup?", answers: ["Spain", "Netherlands", "Germany", "Brazil"], correct: "Spain" },
+            { question: "Who scored the winning goal in the 2014 FIFA World Cup final?", answers: ["Mario Götze", "Lionel Messi", "Thomas Müller", "André Schürrle"], correct: "Mario Götze" },
+            { question: "Which player has the most World Cup appearances?", answers: ["Lothar Matthäus", "Miroslav Klose", "Pelé", "Diego Maradona"], correct: "Lothar Matthäus" },
+            { question: "Which team won the 2008 UEFA Champions League?", answers: ["Manchester United", "Chelsea", "Barcelona", "Liverpool"], correct: "Manchester United" },
+            { question: "Who is the all-time top scorer in La Liga?", answers: ["Lionel Messi", "Cristiano Ronaldo", "Raúl", "Karim Benzema"], correct: "Lionel Messi" },
+            { question: "Which club has won the most Serie A titles?", answers: ["Juventus", "AC Milan", "Inter Milan", "AS Roma"], correct: "Juventus" },
+            { question: "Which country won the 2014 FIFA World Cup?", answers: ["Germany", "Argentina", "Brazil", "Netherlands"], correct: "Germany" },
+            { question: "Who is the only player to have won the Champions League with three different clubs?", answers: ["Clarence Seedorf", "Cristiano Ronaldo", "Zlatan Ibrahimovic", "Samuel Eto'o"], correct: "Clarence Seedorf" },
+            { question: "Who scored the winning goal in the 2010 FIFA World Cup final?", answers: ["Andrés Iniesta", "Xavi", "David Villa", "Fernando Torres"], correct: "Andrés Iniesta" },
+            { question: "Which player holds the record for the most goals scored in a single Premier League season?", answers: ["Alan Shearer", "Mohamed Salah", "Cristiano Ronaldo", "Thierry Henry"], correct: "Mohamed Salah" },
+            { question: "Who won the FIFA Women's World Cup in 2019?", answers: ["USA", "Netherlands", "England", "Germany"], correct: "USA" },
+            { question: "Which country hosted the 2018 FIFA World Cup?", answers: ["Russia", "Brazil", "South Africa", "Germany"], correct: "Russia" },
+            { question: "Which player has the most appearances for the Argentina national team?", answers: ["Lionel Messi", "Javier Mascherano", "Diego Maradona", "Gabriel Batistuta"], correct: "Lionel Messi" },
+            { question: "Which team won the first FIFA Women's World Cup?", answers: ["USA", "Norway", "Germany", "China"], correct: "USA" },
+            { question: "Who is the all-time top scorer for the Brazil national team?", answers: ["Pelé", "Neymar", "Ronaldo", "Romário"], correct: "Pelé" },
+            { question: "Which club has won the most FA Cup titles?", answers: ["Arsenal", "Manchester United", "Chelsea", "Liverpool"], correct: "Arsenal" },
+            { question: "Which country won the first European Championship in 1960?", answers: ["Soviet Union", "Spain", "Italy", "Germany"], correct: "Soviet Union" },
+            { question: "Who won the Golden Boot in the 2010 FIFA World Cup?", answers: ["Thomas Müller", "David Villa", "Wesley Sneijder", "Diego Forlán"], correct: "Thomas Müller" },
+            { question: "Which club did Cristiano Ronaldo join after leaving Manchester United in 2009?", answers: ["Real Madrid", "Juventus", "Sporting CP", "PSG"], correct: "Real Madrid" }, 
+
+            // 50 cricket questions
+            { question: "Who has the highest individual score in a single ODI match?", answers: ["Rohit Sharma", "Martin Guptill", "Chris Gayle", "Sachin Tendulkar"], correct: "Rohit Sharma" },
+            { question: "Which country has won the most Cricket World Cups?", answers: ["Australia", "India", "West Indies", "England"], correct: "Australia" },
+            { question: "Who holds the record for the most wickets in Test cricket?", answers: ["Muttiah Muralitharan", "Shane Warne", "James Anderson", "Anil Kumble"], correct: "Muttiah Muralitharan" },
+            { question: "Who scored the fastest century in ODI cricket?", answers: ["AB de Villiers", "Corey Anderson", "Shahid Afridi", "Brian Lara"], correct: "AB de Villiers" },
+            { question: "Which cricketer has the most runs in international cricket?", answers: ["Sachin Tendulkar", "Ricky Ponting", "Virat Kohli", "Jacques Kallis"], correct: "Sachin Tendulkar" },
+            { question: "Who is the only batsman to score 400 runs in a single Test innings?", answers: ["Brian Lara", "Matthew Hayden", "Don Bradman", "Virender Sehwag"], correct: "Brian Lara" },
+            { question: "Which country won the first T20 World Cup?", answers: ["India", "Pakistan", "Australia", "South Africa"], correct: "India" },
+            { question: "Who holds the record for the most sixes in ODI cricket?", answers: ["Shahid Afridi", "Chris Gayle", "Rohit Sharma", "Sanath Jayasuriya"], correct: "Shahid Afridi" },
+            { question: "Which bowler has taken the most wickets in T20 International cricket?", answers: ["Lasith Malinga", "Shahid Afridi", "Rashid Khan", "Dwayne Bravo"], correct: "Lasith Malinga" },
+            { question: "Which country won the ICC Cricket World Cup 2019?", answers: ["England", "New Zealand", "Australia", "India"], correct: "England" },
+            { question: "Who was the captain of the Indian cricket team that won the 1983 World Cup?", answers: ["Kapil Dev", "Sunil Gavaskar", "Mohammad Azharuddin", "Ravi Shastri"], correct: "Kapil Dev" },
+            { question: "Who is the only bowler to take 10 wickets in a single Test innings?", answers: ["Anil Kumble", "Jim Laker", "Muttiah Muralitharan", "Shane Warne"], correct: "Jim Laker" },
+            { question: "Which player has the most catches in Test cricket as a fielder?", answers: ["Rahul Dravid", "Ricky Ponting", "Jacques Kallis", "Mahela Jayawardene"], correct: "Rahul Dravid" },
+            { question: "Who scored the first double century in ODI cricket?", answers: ["Sachin Tendulkar", "Virender Sehwag", "Chris Gayle", "Rohit Sharma"], correct: "Sachin Tendulkar" },
+            { question: "Which country won the inaugural ICC Champions Trophy in 1998?", answers: ["South Africa", "Australia", "India", "West Indies"], correct: "South Africa" },
+            { question: "Who is the highest wicket-taker in ODI cricket?", answers: ["Muttiah Muralitharan", "Wasim Akram", "Waqar Younis", "Shaun Pollock"], correct: "Muttiah Muralitharan" },
+            { question: "Which player has the most centuries in ODI cricket?", answers: ["Sachin Tendulkar", "Virat Kohli", "Ricky Ponting", "Kumar Sangakkara"], correct: "Sachin Tendulkar" },
+            { question: "Who scored the fastest fifty in T20 International cricket?", answers: ["Yuvraj Singh", "Chris Gayle", "Kieron Pollard", "AB de Villiers"], correct: "Yuvraj Singh" },
+            { question: "Which team won the IPL 2020?", answers: ["Mumbai Indians", "Chennai Super Kings", "Sunrisers Hyderabad", "Delhi Capitals"], correct: "Mumbai Indians" },
+            { question: "Who is the leading run-scorer in T20 International cricket?", answers: ["Virat Kohli", "Rohit Sharma", "Martin Guptill", "Babar Azam"], correct: "Virat Kohli" },
+            { question: "Which bowler has the best bowling figures in an ODI match?", answers: ["Chaminda Vaas", "Glenn McGrath", "Muttiah Muralitharan", "Shahid Afridi"], correct: "Chaminda Vaas" },
+            { question: "Who was the first player to score a century in T20 International cricket?", answers: ["Chris Gayle", "Brendon McCullum", "Suresh Raina", "Mahela Jayawardene"], correct: "Chris Gayle" },
+            { question: "Which player has the most runs in a single World Cup tournament?", answers: ["Sachin Tendulkar", "Matthew Hayden", "Martin Guptill", "Rohit Sharma"], correct: "Sachin Tendulkar" },
+            { question: "Which country hosted the 2011 ICC Cricket World Cup?", answers: ["India", "Australia", "England", "South Africa"], correct: "India" },
+            { question: "Who won the Player of the Tournament in the 2019 ICC Cricket World Cup?", answers: ["Kane Williamson", "Ben Stokes", "Rohit Sharma", "David Warner"], correct: "Kane Williamson" },
+            { question: "Which bowler has the most five-wicket hauls in Test cricket?", answers: ["Muttiah Muralitharan", "Shane Warne", "Anil Kumble", "Richard Hadlee"], correct: "Muttiah Muralitharan" },
+            { question: "Who is the only cricketer to score centuries in both innings of a Test match on debut?", answers: ["Lawrence Rowe", "Greg Chappell", "Sourav Ganguly", "Sunil Gavaskar"], correct: "Lawrence Rowe" },
+            { question: "Which country won the ICC T20 World Cup 2016?", answers: ["West Indies", "England", "India", "Australia"], correct: "West Indies" },
+            { question: "Who is the only player to score 100 international centuries?", answers: ["Sachin Tendulkar", "Ricky Ponting", "Brian Lara", "Jacques Kallis"], correct: "Sachin Tendulkar" },
+            { question: "Which team has won the most IPL titles?", answers: ["Mumbai Indians", "Chennai Super Kings", "Kolkata Knight Riders", "Sunrisers Hyderabad"], correct: "Mumbai Indians" },
+            { question: "Who is the leading run-scorer in Test cricket?", answers: ["Sachin Tendulkar", "Ricky Ponting", "Brian Lara", "Jacques Kallis"], correct: "Sachin Tendulkar" },
+            { question: "Which player has the highest batting average in Test cricket?", answers: ["Don Bradman", "Steve Smith", "Kane Williamson", "Joe Root"], correct: "Don Bradman" },
+            { question: "Who was the first cricketer to take 300 wickets in ODI cricket?", answers: ["Jalal-ud-Din", "Kapil Dev", "Richard Hadlee", "Wasim Akram"], correct: "Jalal-ud-Din" },
+            { question: "Which player holds the record for the fastest double century in Test cricket?", answers: ["Nathan Astle", "Virender Sehwag", "Brendon McCullum", "Chris Gayle"], correct: "Nathan Astle" },
+            { question: "Who won the ICC Women's T20 World Cup 2020?", answers: ["Australia", "India", "England", "South Africa"], correct: "Australia" },
+            { question: "Which bowler has the best bowling figures in a T20 International match?", answers: ["Deepak Chahar", "Ajantha Mendis", "Lasith Malinga", "Yuzvendra Chahal"], correct: "Deepak Chahar" },
+            { question: "Who holds the record for the most runs in a single IPL season?", answers: ["Virat Kohli", "David Warner", "Kane Williamson", "Chris Gayle"], correct: "Virat Kohli" },
+            { question: "Which country hosted the ICC Champions Trophy 2017?", answers: ["England", "India", "Australia", "South Africa"], correct: "England" },
+            { question: "Who won the Player of the Tournament in the 2016 ICC T20 World Cup?", answers: ["Virat Kohli", "Joe Root", "Chris Gayle", "Andre Russell"], correct: "Virat Kohli" },
+            { question: "Who was the first player to score a double century in Test cricket?", answers: ["Tip Foster", "Wally Hammond", "Don Bradman", "Len Hutton"], correct: "Tip Foster" },
+            { question: "Which cricketer has the most runs in a calendar year in ODI cricket?", answers: ["Sachin Tendulkar", "Sourav Ganguly", "Ricky Ponting", "Virat Kohli"], correct: "Sachin Tendulkar" },
+            { question: "Which country won the ICC Cricket World Cup 2003?", answers: ["Australia", "India", "South Africa", "Pakistan"], correct: "Australia" },
+            { question: "Who holds the record for the most dismissals by a wicketkeeper in Test cricket?", answers: ["Mark Boucher", "Adam Gilchrist", "MS Dhoni", "Ian Healy"], correct: "Mark Boucher" },
+            { question: "Which team has won the most Ranji Trophy titles?", answers: ["Mumbai", "Delhi", "Karnataka", "Tamil Nadu"], correct: "Mumbai" },
+            { question: "Who scored the first century in IPL history?", answers: ["Brendon McCullum", "Chris Gayle", "Sachin Tendulkar", "Adam Gilchrist"], correct: "Brendon McCullum" }
+        ]; 
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 30; 
+
+        function startQuiz() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert("Please enter your name.");
+                return;
+            } 
+
+            document.getElementById('username-container').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block'; 
+
+            questions.sort(() => Math.random() - 0.5); // Shuffle questions
+            showQuestion();
+            startTimer();
+        } 
+
+        function showQuestion() {
+            resetState();
+            let currentQuestion = questions[currentQuestionIndex];
+            document.getElementById('question').innerText = currentQuestion.question;
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer;
+                button.classList.add('answer');
+                if (answer === currentQuestion.correct) {
+                    button.dataset.correct = true;
+                }
+                button.addEventListener('click', selectAnswer);
+                document.getElementById('answers').appendChild(button);
+            });
+        } 
+
+        function resetState() {
+            clearStatusClass(document.body);
+            document.getElementById('next-button').style.display = 'none';
+            while (document.getElementById('answers').firstChild) {
+                document.getElementById('answers').removeChild(document.getElementById('answers').firstChild);
+            }
+        } 
+
+        function selectAnswer(e) {
+            const selectedButton = e.target;
+            const correct = selectedButton.dataset.correct;
+            setStatusClass(document.body, correct);
+            Array.from(document.getElementById('answers').children).forEach(button => {
+                setStatusClass(button, button.dataset.correct);
+            }); 
+
+            if (correct) {
+                score += 5;
+                selectedButton.classList.add('correct');
+            } else {
+                score -= 1;
+                selectedButton.classList.add('wrong');
+            } 
+
+            document.getElementById('next-button').style.display = 'block';
+        } 
+
+        function setStatusClass(element, correct) {
+            clearStatusClass(element);
+            if (correct) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('wrong');
+            }
+        } 
+
+        function clearStatusClass(element) {
+            element.classList.remove('correct');
+            element.classList.remove('wrong');
+        } 
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+                resetTimer();
+            } else {
+                endQuiz();
+            }
+        } 
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                }
+            }, 1000);
+        } 
+
+        function resetTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            document.getElementById('time-left').innerText = timeLeft;
+            startTimer();
+        } 
+
+        function endQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('score-container').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+        }
+    </script>
+</body>
+</html>
